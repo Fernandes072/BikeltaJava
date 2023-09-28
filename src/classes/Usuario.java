@@ -1,10 +1,14 @@
 package classes;
 
-public class Usuario {
+import java.util.ArrayList;
+import java.util.Collection;
+
+public abstract class Usuario {
 
 	private String codigo;
 	private Tipo tipo;
 	private String nome;
+	private Collection<Bicicleta> emprestimos = new ArrayList<Bicicleta>();
 
 	public Usuario() {
 
@@ -34,6 +38,14 @@ public class Usuario {
 
 	public void setNome(String nome) {
 		this.nome = nome;
+	}
+
+	public Collection<Bicicleta> getEmprestimos() {
+		return emprestimos;
+	}
+	
+	protected void adicionaEmprestimo(Bicicleta bicicleta) {
+		emprestimos.add(bicicleta);
 	}
 
 	@Override
