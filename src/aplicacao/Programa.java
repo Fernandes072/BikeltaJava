@@ -1,5 +1,6 @@
 package aplicacao;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Scanner;
@@ -79,10 +80,11 @@ public class Programa {
 						throw new RuntimeException("Erro: Informações insuficientes para informações do modelo.");
 					}
 					consultaBicicleta(dados, bicicletas, modelos);
-				} else if (dados[0].equals("lis")) {
-					for (Usuario usuario : usuarios) {
-						System.out.println(usuario);
+				} else if (dados[0].equals("usu")) {
+					if (dados.length < 2) {
+						throw new RuntimeException("Erro: Informações insuficientes para informações do usuário.");
 					}
+					consultaUsuario(dados, usuarios);
 				} else {
 					throw new RuntimeException("Erro: Operação inválida.");
 				}
@@ -157,9 +159,10 @@ public class Programa {
 		} else {
 			throw new RuntimeException("Erro: Tipo de usuário inválido.");
 		}
-		
+
 		if (copiaUsuario.getEmprestimosAtivos().size() > 0) {
-			//Como não possui um setEmprestimosAtivos, é necessário finalizar os empréstimos.
+			// Como não possui um setEmprestimosAtivos, é necessário finalizar os
+			// empréstimos.
 			throw new RuntimeException("Erro: Usuário possui empréstimo ativo. É necessário finalizar os empréstimos.");
 		}
 
@@ -283,14 +286,44 @@ public class Programa {
 				if (bicicleta.getModelo().getCodigo().equals(dados[1])) {
 					System.out.println(bicicleta);
 					modeloExiste = true;
-					break;
 				}
 			}
 			if (!modeloExiste) {
 				throw new RuntimeException("Erro: Modelo de bicicleta inválido.");
 			}
 		}
+	}
 
+	private static void consultaUsuario(String[] dados, Collection<Usuario> usuarios) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+		boolean usuarioExiste = false;
+		Usuario copiaUsuario = null;
+		for (Usuario usuario : usuarios) {
+			if (usuario.getCodigo().equals(dados[1])) {
+				usuarioExiste = true;
+				copiaUsuario = usuario;
+				break;
+			}
+		}
+		
+		if (!usuarioExiste) {
+			throw new RuntimeException("Erro: Código de usuário inválido.");
+		}
+
+		System.out.println(copiaUsuario);
+		System.out.println("Empréstimos ativos: ");
+		for (Emprestimo emprestimo : copiaUsuario.getEmprestimosAtivos()) {
+			System.out.println("Bicicleta: " + emprestimo.getBicicleta().getCodigo() + " / Empréstimo: "
+					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução prevista: " + emprestimo.getDataDevolucao().format(formatter)
+					+ " / Descrição" + emprestimo.getBicicleta().getModelo().getDescricao());
+		}
+		System.out.println("Empréstimos finalizados: ");
+		for (Emprestimo emprestimo : copiaUsuario.getEmprestimosFinalizados()) {
+			System.out.println("Bicicleta: " + emprestimo.getBicicleta().getCodigo() + " / Empréstimo: "
+					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução prevista: " + emprestimo.getDataDevolucao().format(formatter)
+					+ " / Descrição" + emprestimo.getBicicleta().getModelo().getDescricao());
+		}
+		// falta exibir reservas
 	}
 
 	private static void exibirMenu() {

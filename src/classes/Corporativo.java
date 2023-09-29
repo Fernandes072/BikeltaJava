@@ -30,7 +30,7 @@ public class Corporativo extends Usuario {
 		bicicleta.setUsuario(usuario);
 		bicicleta.setEstacao(null);
 
-		usuario.adicionaEmprestimo(new Emprestimo(bicicleta, LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
+		usuario.adicionaEmprestimo(new Emprestimo(bicicleta, LocalDateTime.now(), LocalDateTime.now().plusHours(3)));
 		System.out.println("Operação finalizada: Empréstimo realizado com sucesso.");
 	}
 	

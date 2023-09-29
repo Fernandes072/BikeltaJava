@@ -60,7 +60,7 @@ public abstract class Usuario {
 
 	@Override
 	public String toString() {
-		return getCodigo() + " " + getTipo() + " " + getNome();
+		return "Código: " + getCodigo() + " / " + "Tipo: " + getTipo() + " / " + "Nome: " + getNome();
 	}
 
 	@Override
