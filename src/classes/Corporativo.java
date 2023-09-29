@@ -33,5 +33,17 @@ public class Corporativo extends Usuario {
 		usuario.adicionaEmprestimo(new Emprestimo(bicicleta, LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
 		System.out.println("Operação finalizada: Empréstimo realizado com sucesso.");
 	}
+	
+	public void devolucao(Emprestimo emprestimo, String estacao) {
+
+		System.out.println(emprestimo.getBicicleta().getModelo());
+		System.out.println(emprestimo.getBicicleta().getUsuario());
+		
+		emprestimo.setDataDevolucao(LocalDateTime.now());
+		emprestimo.getBicicleta().getUsuario().removeEmprestimo(emprestimo);
+		emprestimo.getBicicleta().setUsuario(null);
+		emprestimo.getBicicleta().setEstacao(estacao);
+		System.out.println("Operação finalizada: Devolução realizada com sucesso.");
+	}
 
 }

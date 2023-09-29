@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import classes.Bicicleta;
 import classes.Corporativo;
+import classes.Emprestimo;
 import classes.Individual;
 import classes.Modelo;
 import classes.Tipo;
@@ -68,6 +69,11 @@ public class Programa {
 						throw new RuntimeException("Erro: Informações insuficientes para empréstimo.");
 					}
 					emprestarBicicleta(dados, bicicletas, usuarios);
+				} else if (dados[0].equals("dev")) {
+					if (dados.length < 4) {
+						throw new RuntimeException("Erro: Informações insuficientes para devolução.");
+					}
+					devolverBicicleta(dados, bicicletas, usuarios);
 				} else if (dados[0].equals("bik")) {
 					if (dados.length < 2) {
 						throw new RuntimeException("Erro: Informações insuficientes para informações do modelo.");
@@ -136,6 +142,7 @@ public class Programa {
 			if (usuario.getCodigo().equals(codigo)) {
 				usuarioExiste = true;
 				copiaUsuario = usuario;
+				break;
 			}
 		}
 		if (!usuarioExiste) {
@@ -150,6 +157,11 @@ public class Programa {
 		} else {
 			throw new RuntimeException("Erro: Tipo de usuário inválido.");
 		}
+		
+		if (copiaUsuario.getEmprestimosAtivos().size() > 0) {
+			//Como não possui um setEmprestimosAtivos, é necessário finalizar os empréstimos.
+			throw new RuntimeException("Erro: Usuário possui empréstimo ativo. É necessário finalizar os empréstimos.");
+		}
 
 		String nome = "";
 		for (int i = 4; i < dados.length; i++) {
@@ -159,13 +171,15 @@ public class Programa {
 			nome += dados[i];
 		}
 
-		copiaUsuario.setTipo(tipo);
-		copiaUsuario.setNome(nome);
+		usuarios.remove(copiaUsuario);
+		Usuario novoUsuario;
 		if (tipo == Tipo.IND) {
-			copiaUsuario = (Individual) copiaUsuario;
+			novoUsuario = new Individual(copiaUsuario.getCodigo(), tipo, nome);
 		} else {
-			copiaUsuario = (Corporativo) copiaUsuario;
+			novoUsuario = new Corporativo(copiaUsuario.getCodigo(), tipo, nome);
 		}
+
+		usuarios.add(novoUsuario);
 		System.out.println("Operação finalizada: Usuário atualizado com sucesso.");
 	}
 
@@ -173,12 +187,15 @@ public class Programa {
 			Collection<Usuario> usuarios) {
 		boolean bicicletaExiste = false;
 		boolean bicicletaDisponivel = false;
+		Bicicleta copiaBicicleta = null;
 		for (Bicicleta bicicleta : bicicletas) {
 			if (bicicleta.getCodigo().equals(dados[1])) {
 				bicicletaExiste = true;
 				if (bicicleta.getEstacao() != null) {
 					if (bicicleta.getEstacao().equals(dados[2])) {
 						bicicletaDisponivel = true;
+						copiaBicicleta = bicicleta;
+						break;
 					}
 				}
 			}
@@ -192,9 +209,12 @@ public class Programa {
 		}
 
 		boolean usuarioExiste = false;
+		Usuario copiaUsuario = null;
 		for (Usuario usuario : usuarios) {
 			if (usuario.getCodigo().equals(dados[3])) {
 				usuarioExiste = true;
+				copiaUsuario = usuario;
+				break;
 			}
 		}
 		if (!usuarioExiste) {
@@ -205,20 +225,50 @@ public class Programa {
 			throw new RuntimeException("Erro: Bicicleta indisponível na estação.");
 		}
 
-		for (Bicicleta bicicleta : bicicletas) {
-			if (bicicleta.getCodigo().equals(dados[1])) {
-				for (Usuario usuario : usuarios) {
-					if (usuario.getCodigo().equals(dados[3])) {
-						if (usuario instanceof Individual) {
-							((Individual) usuario).emprestimo(usuario, bicicleta);
-						} else {
-							((Corporativo) usuario).emprestimo(usuario, bicicleta);
-						}
-					}
-				}
+		if (copiaUsuario instanceof Individual) {
+			((Individual) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta);
+		} else {
+			((Corporativo) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta);
+		}
+	}
+
+	private static void devolverBicicleta(String[] dados, Collection<Bicicleta> bicicletas,
+			Collection<Usuario> usuarios) {
+
+		Usuario copiaUsuario = null;
+
+		boolean usuarioExiste = false;
+		for (Usuario usuario : usuarios) {
+			if (usuario.getCodigo().equals(dados[3])) {
+				usuarioExiste = true;
+				copiaUsuario = usuario;
+				break;
 			}
 		}
+		if (!usuarioExiste) {
+			throw new RuntimeException("Erro: Código de usuário inválido.");
+		}
 
+		if (!(dados[2].equals("E01") || dados[2].equals("E02"))) {
+			throw new RuntimeException("Erro: Código de estação inválido.");
+		}
+
+		boolean possuiEmprestimo = false;
+		for (Emprestimo emprestimo : copiaUsuario.getEmprestimosAtivos()) {
+			if (emprestimo.getBicicleta().getCodigo().equals(dados[1])) {
+				possuiEmprestimo = true;
+				if (copiaUsuario instanceof Individual) {
+					((Individual) copiaUsuario).devolucao(emprestimo, dados[2]);
+				} else {
+					((Corporativo) copiaUsuario).devolucao(emprestimo, dados[2]);
+				}
+			}
+			break;
+		}
+
+		if (!possuiEmprestimo) {
+			throw new RuntimeException("Erro: Usuário não possui empréstimo ativo dessa bicicleta.");
+		}
 	}
 
 	private static void consultaBicicleta(String[] dados, Collection<Bicicleta> bicicletas,
@@ -233,6 +283,7 @@ public class Programa {
 				if (bicicleta.getModelo().getCodigo().equals(dados[1])) {
 					System.out.println(bicicleta);
 					modeloExiste = true;
+					break;
 				}
 			}
 			if (!modeloExiste) {
