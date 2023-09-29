@@ -1,5 +1,7 @@
 package classes;
 
+import java.time.LocalDateTime;
+
 public class Individual extends Usuario {
 
 	public Individual(String codigo, Tipo tipo, String nome) {
@@ -8,8 +10,8 @@ public class Individual extends Usuario {
 
 	public void emprestimo(Usuario usuario, Bicicleta bicicleta) {
 
-		if (getEmprestimos().size() == 1) {
-			throw new RuntimeException("Erro: Limite de empréstimos atingido");
+		if (getEmprestimosAtivos().size() == 1) {
+			throw new RuntimeException("Erro: Limite de empréstimos atingido.");
 		}
 
 		// implementar condição da reserva
@@ -18,17 +20,8 @@ public class Individual extends Usuario {
 		System.out.println(usuario);
 		bicicleta.setUsuario(usuario);
 		bicicleta.setEstacao(null);
-		usuario.adicionaEmprestimo(bicicleta);
-
-		/*
-		 * for (Bicicleta bicicleta : bicicletas) { if
-		 * (bicicleta.getCodigo().equals(dados[1])) { for (Usuario usuario : usuarios) {
-		 * if (usuario.getCodigo().equals(dados[3])) {
-		 * System.out.println(bicicleta.getModelo()); System.out.println(usuario);
-		 * bicicleta.setUsuario(usuario); bicicleta.setEstacao(null);
-		 * usuario.adicionaEmprestimo(bicicleta); } } } }
-		 */
-
+		
+		usuario.adicionaEmprestimo(new Emprestimo(bicicleta, LocalDateTime.now(),LocalDateTime.now().plusHours(1)));
 		System.out.println("Operação finalizada: Empréstimo realizado com sucesso.");
 	}
 }

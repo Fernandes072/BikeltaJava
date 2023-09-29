@@ -211,6 +211,8 @@ public class Programa {
 					if (usuario.getCodigo().equals(dados[3])) {
 						if (usuario instanceof Individual) {
 							((Individual) usuario).emprestimo(usuario, bicicleta);
+						} else {
+							((Corporativo) usuario).emprestimo(usuario, bicicleta);
 						}
 					}
 				}
