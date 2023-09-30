@@ -10,6 +10,7 @@ import classes.Corporativo;
 import classes.Emprestimo;
 import classes.Individual;
 import classes.Modelo;
+import classes.Reserva;
 import classes.Tipo;
 import classes.Usuario;
 
@@ -55,7 +56,7 @@ public class Programa {
 				}
 
 				if (dados[0].equals("cdu")) {
-					if (dados.length < 4) {
+					if (dados.length < 5) {
 						throw new RuntimeException("Erro: Informações insuficientes para cadastro.");
 					}
 					if (dados[1].equals("<a>")) {
@@ -75,7 +76,12 @@ public class Programa {
 						throw new RuntimeException("Erro: Informações insuficientes para devolução.");
 					}
 					devolverBicicleta(dados, bicicletas, usuarios);
-				} else if (dados[0].equals("bik")) {
+				} else if (dados[0].equals("res")) {
+					if (dados.length < 3) {
+						throw new RuntimeException("Erro: Informações insuficientes para reserva.");
+					}
+					reservarBicicleta(dados, modelos, usuarios);
+				}else if (dados[0].equals("bik")) {
 					if (dados.length < 2) {
 						throw new RuntimeException("Erro: Informações insuficientes para informações do modelo.");
 					}
@@ -99,6 +105,38 @@ public class Programa {
 		System.out.println();
 		System.out.println("Sistema finalizado");
 		sc.close();
+	}
+
+	private static void reservarBicicleta(String[] dados, Collection<Modelo> modelos, Collection<Usuario> usuarios) {
+		String codigo = dados[2];
+		Usuario copiaUsuario = null;
+		boolean usuarioExiste = false;
+		for (Usuario usuario : usuarios) {
+			if (usuario.getCodigo().equals(codigo)) {
+				usuarioExiste = true;
+				copiaUsuario = usuario;
+				break;
+			}
+		}
+		if (!usuarioExiste) {
+			throw new RuntimeException("Erro: Usuário não existe.");
+		}
+		
+		String codigoModelo = dados[1];
+		Modelo copiaModelo = null;
+		boolean modeloExiste = false;
+		for (Modelo modelo : modelos) {
+			if (modelo.getCodigo().equals(codigoModelo)) {
+				modeloExiste = true;
+				copiaModelo = modelo;
+				break;
+			}
+		}
+		if (!modeloExiste) {
+			throw new RuntimeException("Erro: Modelo não existe.");
+		}
+		
+		copiaUsuario.adicionaReserva(copiaModelo);
 	}
 
 	private static void cadastrarUsuario(String[] dados, Collection<Usuario> usuarios) {
@@ -227,11 +265,39 @@ public class Programa {
 		if (!bicicletaDisponivel) {
 			throw new RuntimeException("Erro: Bicicleta indisponível na estação.");
 		}
+		
+		boolean possuiReserva = false;
+		Reserva copiaReserva = null;
+		for (Reserva reserva : copiaUsuario.getReservas()) {
+			if (copiaBicicleta.getModelo().equals(reserva.getModelo())) {
+				possuiReserva = true;
+				copiaReserva = reserva;
+				break;
+			}
+		}
+		int numReservas = 0;
+		for (Usuario usuario : usuarios) {
+			for (Reserva reserva : usuario.getReservas()) {
+				if(copiaBicicleta.getModelo().equals(reserva.getModelo()) && !usuario.equals(copiaUsuario)) {
+					numReservas++;
+				}
+				
+			}
+		}
+		int numBicicletas = 0;
+		for (Bicicleta bicicleta : bicicletas) {
+			if(bicicleta.getModelo().equals(copiaBicicleta.getModelo()) && bicicleta.getUsuario() == null) {
+				numBicicletas++;
+			}
+		}
+		if (numBicicletas <= numReservas && !possuiReserva) {
+			throw new RuntimeException("Erro: Todas as bicicletas desse modelo estão reservadas.");
+		}
 
 		if (copiaUsuario instanceof Individual) {
-			((Individual) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta);
+			((Individual) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta, copiaReserva);
 		} else {
-			((Corporativo) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta);
+			((Corporativo) copiaUsuario).emprestimo(copiaUsuario, copiaBicicleta, copiaReserva);
 		}
 	}
 
@@ -314,16 +380,19 @@ public class Programa {
 		System.out.println("Empréstimos ativos: ");
 		for (Emprestimo emprestimo : copiaUsuario.getEmprestimosAtivos()) {
 			System.out.println("Bicicleta: " + emprestimo.getBicicleta().getCodigo() + " / Empréstimo: "
-					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução prevista: " + emprestimo.getDataDevolucao().format(formatter)
-					+ " / Descrição" + emprestimo.getBicicleta().getModelo().getDescricao());
+					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução: " + emprestimo.getDataDevolucao().format(formatter)
+					+ " / Descrição: " + emprestimo.getBicicleta().getModelo().getDescricao());
 		}
 		System.out.println("Empréstimos finalizados: ");
 		for (Emprestimo emprestimo : copiaUsuario.getEmprestimosFinalizados()) {
 			System.out.println("Bicicleta: " + emprestimo.getBicicleta().getCodigo() + " / Empréstimo: "
-					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução prevista: " + emprestimo.getDataDevolucao().format(formatter)
-					+ " / Descrição" + emprestimo.getBicicleta().getModelo().getDescricao());
+					+ emprestimo.getDataEmprestimo().format(formatter) + " / Devolução: " + emprestimo.getDataDevolucao().format(formatter)
+					+ " / Descrição: " + emprestimo.getBicicleta().getModelo().getDescricao());
 		}
-		// falta exibir reservas
+		System.out.println("Reservas ativas: ");
+		for (Reserva reserva : copiaUsuario.getReservas()) {
+			System.out.println("Reserva: "+ reserva.getDataReserva().format(formatter) + " / Descrição: " + reserva.getModelo().getDescricao());
+		}
 	}
 
 	private static void exibirMenu() {

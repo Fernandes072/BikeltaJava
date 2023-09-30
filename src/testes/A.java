@@ -1,7 +1,6 @@
 package testes;
 
 import java.time.LocalDateTime;
-import java.util.Scanner;
 
 public class A {
 

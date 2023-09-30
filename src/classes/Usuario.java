@@ -1,5 +1,6 @@
 package classes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -10,6 +11,7 @@ public abstract class Usuario {
 	private String nome;
 	private Collection<Emprestimo> emprestimosAtivos = new ArrayList<Emprestimo>();
 	private Collection<Emprestimo> emprestimosFinalizados = new ArrayList<Emprestimo>();
+	private Collection<Reserva> reservas = new ArrayList<Reserva>();
 
 	public Usuario() {
 
@@ -49,6 +51,10 @@ public abstract class Usuario {
 		return emprestimosFinalizados;
 	}
 	
+	public Collection<Reserva> getReservas() {
+		return reservas;
+	}
+
 	protected void adicionaEmprestimo(Emprestimo emprestimo) {
 		emprestimosAtivos.add(emprestimo);
 	}
@@ -56,6 +62,18 @@ public abstract class Usuario {
 	protected void removeEmprestimo(Emprestimo emprestimo) {
 		emprestimosAtivos.remove(emprestimo);
 		emprestimosFinalizados.add(emprestimo);
+	}
+	
+	protected void removeReserva(Reserva reserva) {
+		reservas.remove(reserva);
+	}
+	
+	public void adicionaReserva(Modelo modelo) {
+		if (reservas.size() == 2) {
+			throw new RuntimeException("Erro: Limite de reservas atingido.");
+		}
+		reservas.add(new Reserva(modelo, LocalDateTime.now()));
+		System.out.println("Operação finalizada: Reserva realizada com sucesso.");
 	}
 
 	@Override

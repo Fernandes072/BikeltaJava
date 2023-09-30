@@ -8,7 +8,7 @@ public class Corporativo extends Usuario {
 		super(codigo, tipo, nome);
 	}
 
-	public void emprestimo(Usuario usuario, Bicicleta bicicleta) {
+	public void emprestimo(Usuario usuario, Bicicleta bicicleta, Reserva reserva) {
 
 		if (getEmprestimosAtivos().size() == 3) {
 			throw new RuntimeException("Erro: Limite de empréstimos atingido.");
@@ -23,7 +23,7 @@ public class Corporativo extends Usuario {
 			}
 		}
 
-		// implementar condição da reserva
+		removeReserva(reserva);
 
 		System.out.println(bicicleta.getModelo());
 		System.out.println(usuario);
